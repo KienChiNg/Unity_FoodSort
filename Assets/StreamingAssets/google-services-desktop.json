@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "874141082731",
+    "project_id": "ig-grill-puzzle",
+    "storage_bucket": "ig-grill-puzzle.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874141082731:android:f0568b0845c39f288dbd2e",
+        "android_client_info": {
+          "package_name": "grill.puzzle.food.sort"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBN54EZUj10aRyuU72P3Pm4tXzPIQ_ekOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

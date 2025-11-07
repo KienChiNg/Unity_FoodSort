@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Food
+  - Skewer
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Skewer
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Background
+    uniqueID: 3651332721
+    locked: 0
+  - name: Header
+    uniqueID: 3812357745
+    locked: 0
+  - name: Stove
+    uniqueID: 273929943
+    locked: 0
+  - name: Skewer
+    uniqueID: 2305504443
+    locked: 0
+  - name: Food
+    uniqueID: 3438746089
+    locked: 0
+  - name: VFX
+    uniqueID: 3530201315
+    locked: 0
+  - name: UI
+    uniqueID: 180050611
+    locked: 0
+  - name: Tutorial
+    uniqueID: 3401552483
+    locked: 0
