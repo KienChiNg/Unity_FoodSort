@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 #if UNITY_ANDROID
 using Kelsey.AntiCheat.Genuine.Android;
 #endif
@@ -9,12 +11,14 @@ namespace FoodSort
 {
 	public class GameManager : Singleton<GameManager>, IAntiCheat
 	{
+		public List<AvatarSO> avatarSOs;
 		private Loading _loading;
 		private bool isChinaman = false;
 		public bool IsCheater => isChinaman;
 
 		public Action<int> OnCoinChange;
 
+		public int inxProgess;
 		private int _coin;
 		private int _countRewardAds;
 		private int _countInterAds;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -11,12 +12,19 @@ using Color = UnityEngine.Color;
 
 namespace FoodSort
 {
+    [Serializable]
+    public class ProgessHomeData
+    {
+        public GameObject backGround;
+        // public AvatarSO avatarSO;
+    }
     public class HomeManager : MonoBehaviour
     {
-        private const float SLIDER_WIDTH_MAX = 650;
+        private const float SLIDER_WIDTH_MAX = 585;
         private const float TIME_DEFAULT_ANIM_LOADING = 2f;
         private const float TIME_STOP_ANIM_LOADING = 0.05f;
         public static HomeManager Instance;
+        [SerializeField] private List<ProgessHomeData> progessHomeDatas;
         [SerializeField] private UIClick _uIClickPlay;
         [SerializeField] private Image _backgroundLoading;
         [SerializeField] private RectTransform _slider;
@@ -28,7 +36,11 @@ namespace FoodSort
         #endregion
         [SerializeField] private TMP_Text _levelRank;
         [SerializeField] private TMP_Text _levelBtn;
+        [SerializeField] private TMP_Text _avaName;
+        [SerializeField] private Image _avatar;
+        [SerializeField] private Image _hiddenAvatar;
         [SerializeField] private Transform _textNoticeTF;
+        private List<AvatarSO> _avatarSOs = new List<AvatarSO>();
 
         private Tween _tweenFade;
         private Tween _tweenScale;
@@ -43,7 +55,8 @@ namespace FoodSort
         }
         void Start()
         {
-            SoundManager.Instance.Play(Consts.SCENE_HOME);
+            _avatarSOs = GameManager.Instance.avatarSOs;
+
             _uIClickPlay.ActionAfterClick += Play;
 
             if (MaxMediationController.instance.DisplayedBanner)
@@ -55,16 +68,44 @@ namespace FoodSort
         public void LoadLevelDisplayRank()
         {
             int level = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
-            int levelSlider = Mathf.Clamp(level, 0, 100);
+            // int level = 2001;
+            int inx = GetAvatarInx(level);
 
+            GameManager.Instance.inxProgess = inx;
 
+            AvatarSO avatar = _avatarSOs[inx];
+            int levelSlider = Mathf.Clamp(level, 0, avatar.levelEnd);
+
+            for (int i = 0; i < progessHomeDatas.Count; i++)
+            {
+                progessHomeDatas[i].backGround.SetActive(false);
+            }
+
+            progessHomeDatas[inx].backGround.SetActive(true);
+
+            _avatar.sprite = avatar.avatar;
+            _hiddenAvatar.sprite = inx == _avatarSOs.Count - 1 ? avatar.avatar : _avatarSOs[inx + 1].hiddenAvatar;
+            _avaName.text = avatar.avaName;
             _levelBtn.text = $"Level {level}";
-            _levelRank.text = $"{levelSlider}/100";
+            _levelRank.text = $"{levelSlider}/{avatar.levelEnd}";
 
-            float preValue = SLIDER_WIDTH_MAX * levelSlider / 100;
+            float preValue = SLIDER_WIDTH_MAX * levelSlider / avatar.levelEnd;
             Vector2 sizeX = _slider.sizeDelta;
             sizeX.x = preValue;
             _slider.sizeDelta = sizeX;
+
+            SoundManager.Instance.Play(Consts.SCENE_HOME, _avatarSOs[inx].audioClipBG);
+        }
+        private int GetAvatarInx(int level)
+        {
+            int inx = _avatarSOs.Count - 1;
+
+            for (int i = 0; i < _avatarSOs.Count; i++)
+            {
+                if (_avatarSOs[i].levelEnd >= level) return i;
+            }
+
+            return inx;
         }
         public async void Play()
         {

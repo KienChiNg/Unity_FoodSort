@@ -14,7 +14,7 @@ namespace FoodSort
 		[SerializeField] private AudioSource _audioSourceMusic;
 		public List<AudioClip> _audioBackground;
 		public AudioClip _audioBackgroundHome;
-		public AudioClip musicBackgroundHome;
+		// public AudioClip musicBackgroundHome;
 		public AudioClip musicBackgroundGameplay;
 		public AudioClip audioSceneStart;
 		public AudioClip audioDishMove;
@@ -39,10 +39,10 @@ namespace FoodSort
 
 		public bool IsMute { get => _isMute; set => _isMute = value; }
 		public bool IsHaptic { get => _isHaptic; set => _isHaptic = value; }
-        public bool IsMuteMusic { get => _isMuteMusic; set => _isMuteMusic = value; }
+		public bool IsMuteMusic { get => _isMuteMusic; set => _isMuteMusic = value; }
 		public AudioSource AudioSource { get => _audioSource; set => _audioSource = value; }
 
-        void Awake()
+		void Awake()
 		{
 			_audioSource = GetComponent<AudioSource>();
 			_levelManager = LevelManager.Instance;
@@ -65,9 +65,9 @@ namespace FoodSort
 			if (_isMute) HandleVolume(0);
 			if (_isMuteMusic) HandleVolumeMusic(0);
 		}
-		public void Play(string scene)
+		public void Play(string scene, AudioClip musicBackgroundHome = null)
 		{
-			StartCoroutine(PlayRandomLoop(scene));
+			StartCoroutine(PlayRandomLoop(scene, musicBackgroundHome));
 		}
 		public void HandleVolume(float volume)
 		{
@@ -81,7 +81,7 @@ namespace FoodSort
 			// _audioSourceBackground.volume = volume;
 			_audioSourceMusic.volume = volume;
 		}
-		IEnumerator PlayRandomLoop(string scene)
+		IEnumerator PlayRandomLoop(string scene, AudioClip musicBackgroundHome)
 		{
 			_audioSourceBackground.volume = _isVolume;
 			_audioSourceMusic.volume = _isVolumeMusic;

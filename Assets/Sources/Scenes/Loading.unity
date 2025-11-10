@@ -803,7 +803,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 32222a68bcd17754582da076778a9321, type: 3}
   - {fileID: 8300000, guid: 27c55520426a9564aabf3971d7a70e5c, type: 3}
   _audioBackgroundHome: {fileID: 8300000, guid: adcd531e8b781c84f87405d6256e1dee, type: 3}
-  musicBackgroundHome: {fileID: 8300000, guid: 263b1bfe3096f0549aea40ef2ee10c37, type: 3}
   musicBackgroundGameplay: {fileID: 8300000, guid: da43ba425a6a26d45812db0acf29b0aa, type: 3}
   audioSceneStart: {fileID: 8300000, guid: 3624b63210b56d34fbbbdebde12af4d0, type: 3}
   audioDishMove: {fileID: 8300000, guid: cb4e607dcc55d0840adff3de90983afc, type: 3}
@@ -1265,6 +1264,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9f18e2c6781aef4dafbcdabf24fc5ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  avatarSOs:
+  - {fileID: 11400000, guid: b20ab346515da2d41b22b183d7283b12, type: 2}
+  - {fileID: 11400000, guid: 9888b776c15a85149b5007f3e5ea1125, type: 2}
+  - {fileID: 11400000, guid: 201fc03711632714989ebb2b1d4f9591, type: 2}
+  - {fileID: 11400000, guid: 3285dd628207e3945b17bf14ded8c5e2, type: 2}
+  - {fileID: 11400000, guid: 0a3d421466ea6c94a99b6ee8ef4cabac, type: 2}
+  - {fileID: 11400000, guid: a12ce71f68e7a7b468fb9f7992001445, type: 2}
 --- !u!4 &1778937665
 Transform:
   m_ObjectHideFlags: 0

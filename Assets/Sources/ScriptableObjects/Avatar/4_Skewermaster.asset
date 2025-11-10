@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
+  m_Name: 4_Skewermaster
+  m_EditorClassIdentifier: 
+  levelStart: 601
+  levelEnd: 1000
+  avatar: {fileID: 21300000, guid: a8b34d6e01c75c445aeff47aaa196e1a, type: 3}
+  hiddenAvatar: {fileID: 21300000, guid: 8201419f9b163f64ab0f3890d4fffa20, type: 3}
+  audioClipBG: {fileID: 8300000, guid: 3d45b2e32429b51419044e012eab9f3c, type: 3}
+  avaName: Skewermaster

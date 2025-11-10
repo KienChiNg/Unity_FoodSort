@@ -53,6 +53,7 @@ namespace FoodSort
 		[SerializeField] private UIClick _uIClickNextLevel;
 		[SerializeField] private UIClick _uIClickClaim;
 		[SerializeField] private Image _newFood;
+		[SerializeField] private Image _victoryImgAva;
 		[SerializeField] private TMP_Text _newFoodTxt;
 
 		int _level;
@@ -102,6 +103,7 @@ namespace FoodSort
 		}
 		async Task DoSequence()
 		{
+			_victoryImgAva.sprite = GameManager.Instance.avatarSOs[GameManager.Instance.inxProgess].avatar;
 			_coinHeader.localScale = Vector3.zero;
 			_coinGain.localScale = Vector3.zero;
 			_victoryImg.localScale = Vector3.zero;

@@ -7,7 +7,7 @@ using DG.Tweening.Plugins.Options;
 using DG.Tweening;
 using DG.Tweening.Core;
 
-namespace DG.Tweening
+namespace DG.Tweening 
 {
     public static class DOTweenModuleEPOOutline
     {
