@@ -31,9 +31,12 @@ namespace FoodSort
 		[SerializeField] private Transform _buttonX3;
 		[SerializeField] private Transform _buttonContinue;
 		[SerializeField] private Transform _coveringSheet;
+		[SerializeField] private Transform _coveringSheetCharacter;
 		[SerializeField] private Transform _giftClaim;
 		[SerializeField] private Transform _valueGift;
 		[SerializeField] private Transform _buttonGift;
+		[SerializeField] private Transform _valueGiftCharacter;
+		[SerializeField] private Transform _buttonGiftCharacter;
 		[SerializeField] private Transform _giftChild;
 		[SerializeField] private Animator _giftAnim;
 		#endregion
@@ -52,13 +55,19 @@ namespace FoodSort
 
 		[SerializeField] private UIClick _uIClickNextLevel;
 		[SerializeField] private UIClick _uIClickClaim;
+		[SerializeField] private UIClick _uIClickClaimCharacter;
 		[SerializeField] private Image _newFood;
-		[SerializeField] private Image _victoryImgAva;
+		[SerializeField] private Image _character;
+		[SerializeField] private Image _characterGift;
 		[SerializeField] private TMP_Text _newFoodTxt;
+		private List<AvatarSO> _avatarSOs = new List<AvatarSO>();
 
 		int _level;
+		int _characterInx;
 		int _prelUnlock;
 		int _nextLevelUnlock;
+
+		private bool _isUnlockCharacter;
 		private bool _isClick;
 		private bool _isOpen;
 
@@ -74,6 +83,8 @@ namespace FoodSort
 		protected override void OnEnable()
 		{
 			base.OnEnable();
+
+			_avatarSOs = GameManager.Instance.avatarSOs;
 
 			_tween?.Kill();
 			_tweenRawImage?.Kill();
@@ -101,9 +112,30 @@ namespace FoodSort
 		{
 			// _ = DoSequence();
 		}
+		private int GetAvatarInx(int level)
+		{
+			int inx = _avatarSOs.Count - 1;
+
+			for (int i = 0; i < _avatarSOs.Count; i++)
+			{
+				if (_avatarSOs[i].levelEnd > level) return i;
+			}
+
+			return inx;
+		}
 		async Task DoSequence()
 		{
-			_victoryImgAva.sprite = GameManager.Instance.avatarSOs[GameManager.Instance.inxProgess].avatar;
+			// GameManager gameManager = GameManager.Instance;
+			LoadLevelDisplayUnlockGift();
+			_characterInx = GetAvatarInx(_level);
+
+			if (_avatarSOs[_characterInx].levelEnd == (_level + 1) && (_level + 1) != 1 && (_level + 1) != _avatarSOs[_avatarSOs.Count - 1].levelEnd)
+			{
+				_isUnlockCharacter = true;
+				_characterGift.sprite = _characterInx + 1 >= _avatarSOs.Count ? _avatarSOs[_characterInx].avatar : _avatarSOs[_characterInx + 1].avatar;
+			}
+
+			_character.sprite = _avatarSOs[_characterInx].avatar;
 			_coinHeader.localScale = Vector3.zero;
 			_coinGain.localScale = Vector3.zero;
 			_victoryImg.localScale = Vector3.zero;
@@ -113,7 +145,14 @@ namespace FoodSort
 			_buttonContinue.localScale = Vector3.zero;
 			_levelDisplay.transform.localScale = Vector3.zero;
 
-			LoadLevelDisplayUnlockGift();
+			_character.gameObject.SetActive(true);
+			_coinHeader.gameObject.SetActive(true);
+			_victoryImg.gameObject.SetActive(true);
+			_sliderImg.gameObject.SetActive(true);
+			_giftImg.gameObject.SetActive(true);
+
+			_levelDisplay.gameObject.SetActive(true);
+
 			await Task.Delay(500);
 			await ImageScale(_victoryImg, TIME_ANIM_SCALE);
 			await ImageScale(_levelDisplay.transform, TIME_ANIM_SCALE_TEXT_LEVEL);
@@ -187,11 +226,18 @@ namespace FoodSort
 			GameManager.Instance.StateCoin(true, Consts.COIN_AFTER_WIN * 2);
 			await ImageScale(_valueGift, 0.3f, true);
 			await ImageScale(_buttonGift, 0.2f, true);
-
 			_coveringSheet.gameObject.SetActive(false);
+			if (!_isUnlockCharacter)
+			{
 
-			// CheckAdsx0();
-			await SequenceContinue();
+				// CheckAdsx0();
+				await SequenceContinue();
+			}
+			else
+			{
+
+				UnlockCharacter();
+			}
 		}
 		public async void NextLevel(int xCoin = 1)
 		{
@@ -203,6 +249,7 @@ namespace FoodSort
 		}
 		public void SetLevelDisplay(int level)
 		{
+			// this._level = level;
 			_levelDisplay.text = $"Level {level}";
 		}
 		public void LoadLevelDisplayUnlockGift()
@@ -240,14 +287,41 @@ namespace FoodSort
 				_newFood.sprite = LevelManager.Instance.UnlockFoodSO.unlockLevelFoodSOs[LevelManager.Instance.InxUnlock + 1].foodSO.foodSprite;
 				_newFoodTxt.text = LevelManager.Instance.UnlockFoodSO.unlockLevelFoodSOs[LevelManager.Instance.InxUnlock + 1].foodSO.foodName;
 			}
-			else
+			else if (!_isUnlockCharacter)
 			{
 				_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
 				await SequenceContinue();
 			}
+			else if (_isUnlockCharacter)
+			{
+				UnlockCharacter();
+			}
+		}
+		public async void UnlockCharacter()
+		{
+			_valueGiftCharacter.localScale = Vector3.zero;
+			_buttonGiftCharacter.localScale = Vector3.zero;
+			_coveringSheetCharacter.gameObject.SetActive(true);
+			_valueGiftCharacter.localScale = Vector3.zero;
+			_valueGiftCharacter.gameObject.SetActive(true);
+			await ImageScale(_valueGiftCharacter, 0.6f);
+			await ImageScale(_buttonGiftCharacter, TIME_ANIM_SCALE_BUTTONCONTINUE_LEVEL);
+			_uIClickClaimCharacter.ActionAfterClick += OpenGiftCharacter;
+		}
+		public async void OpenGiftCharacter()
+		{
+			_uIClickClaimCharacter.ActionAfterClick -= OpenGiftCharacter;
+			await ImageScale(_valueGiftCharacter, 0.3f, true);
+			await ImageScale(_buttonGiftCharacter, 0.2f, true);
+			_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
+			_coveringSheetCharacter.gameObject.SetActive(false);
+			await SequenceContinue();
 		}
 		public async Task SequenceContinue()
 		{
+			_coinGain.gameObject.SetActive(true);
+			_buttonX3.gameObject.SetActive(true);
+			_buttonContinue.gameObject.SetActive(true);
 			_ = ImageScale(_coinGain, TIME_ANIM_SCALE_SLIDER_LEVEL);
 
 			await ImageScale(_buttonX3, TIME_ANIM_SCALE_BUTTONX3_LEVEL);

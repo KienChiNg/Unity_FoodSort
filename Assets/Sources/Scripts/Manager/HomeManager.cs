@@ -24,22 +24,28 @@ namespace FoodSort
         private const float TIME_DEFAULT_ANIM_LOADING = 2f;
         private const float TIME_STOP_ANIM_LOADING = 0.05f;
         public static HomeManager Instance;
-        [SerializeField] private List<ProgessHomeData> progessHomeDatas;
         [SerializeField] private UIClick _uIClickPlay;
         [SerializeField] private Image _backgroundLoading;
         [SerializeField] private RectTransform _slider;
         [SerializeField] private RectTransform _bottomBar;
+        [SerializeField] private RectTransform _bottomBarProgessAva;
         #region LOADING
         [SerializeField] private GameObject _loading;
         [SerializeField] private Transform _iconLoading;
         [SerializeField] private LoadingAnim _loadingAnim;
         #endregion
-        [SerializeField] private TMP_Text _levelRank;
         [SerializeField] private TMP_Text _levelBtn;
+        [SerializeField] private Transform _textNoticeTF;
+        #region PROGESSAVATAR
         [SerializeField] private TMP_Text _avaName;
         [SerializeField] private Image _avatar;
         [SerializeField] private Image _hiddenAvatar;
-        [SerializeField] private Transform _textNoticeTF;
+        [SerializeField] private TMP_Text _levelRank;
+        [SerializeField] private List<ProgessHomeData> progessHomeDatas;
+        [SerializeField] private UIProgressAva _uIProgressAva;
+        [SerializeField] private GameObject _progressAvaSV;
+        [SerializeField] private Transform _progressAvaStorages;
+        #endregion
         private List<AvatarSO> _avatarSOs = new List<AvatarSO>();
 
         private Tween _tweenFade;
@@ -57,11 +63,14 @@ namespace FoodSort
         {
             _avatarSOs = GameManager.Instance.avatarSOs;
 
+            // _uIClickProgessAvatar.ActionAfterClick += () => _progressAvaSV.SetActive(true);
+
             _uIClickPlay.ActionAfterClick += Play;
 
             if (MaxMediationController.instance.DisplayedBanner)
             {
                 _bottomBar.anchoredPosition = new Vector3(0, 280, 0);
+                _bottomBarProgessAva.anchoredPosition = new Vector3(0, 250, 0);
             }
             LoadLevelDisplayRank();
         }
@@ -93,8 +102,20 @@ namespace FoodSort
             Vector2 sizeX = _slider.sizeDelta;
             sizeX.x = preValue;
             _slider.sizeDelta = sizeX;
-
+            SetUpProgess(inx);
             SoundManager.Instance.Play(Consts.SCENE_HOME, _avatarSOs[inx].audioClipBG);
+        }
+        private void SetUpProgess(int inx)
+        {
+            for (int i = _avatarSOs.Count - 1; i >= 0; i--)
+            {
+                UIProgressAva uIProgressAva = Instantiate(_uIProgressAva, _progressAvaStorages);
+                if (i > inx)
+                    uIProgressAva.SetHiddenAvatar(_avatarSOs[i].hiddenAvatar, _avatarSOs[i].levelStart);
+                else
+                    uIProgressAva.SetAvatar(_avatarSOs[i].avatar, _avatarSOs[i].levelStart, _avatarSOs[i].avaName);
+                uIProgressAva.gameObject.SetActive(true);
+            }
         }
         private int GetAvatarInx(int level)
         {
@@ -102,7 +123,7 @@ namespace FoodSort
 
             for (int i = 0; i < _avatarSOs.Count; i++)
             {
-                if (_avatarSOs[i].levelEnd >= level) return i;
+                if (_avatarSOs[i].levelEnd > level) return i;
             }
 
             return inx;

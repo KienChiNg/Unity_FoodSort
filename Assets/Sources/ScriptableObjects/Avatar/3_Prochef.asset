@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
   m_Name: 3_Prochef
   m_EditorClassIdentifier: 
-  levelStart: 301
+  levelStart: 300
   levelEnd: 600
   avatar: {fileID: 21300000, guid: edec016aaabf7e848a9da8494c7428a3, type: 3}
   hiddenAvatar: {fileID: 21300000, guid: 3cb3e4680f4e9b5469507f572c0f9bb6, type: 3}

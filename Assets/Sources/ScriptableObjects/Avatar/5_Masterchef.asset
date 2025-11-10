@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
   m_Name: 5_Masterchef
   m_EditorClassIdentifier: 
-  levelStart: 1001
+  levelStart: 1000
   levelEnd: 1500
   avatar: {fileID: 21300000, guid: dba5082510d4ae34491d83a4467a2c14, type: 3}
   hiddenAvatar: {fileID: 21300000, guid: f4a76be835e41124fbdbfd4f3f010ac9, type: 3}

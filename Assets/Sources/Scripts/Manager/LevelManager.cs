@@ -221,7 +221,7 @@ namespace FoodSort
 		{
 			// _isLevelSpecial = false;
 			_levelDisplay = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
-			// _levelDisplay = 200;
+			// _levelDisplay = 1500;
 
 			CheckNewFood();
 			// _levelDisplaySpecial = PlayerPrefs.GetInt(Consts.LEVEL_SAVE_SPECIAL, 1);
@@ -804,7 +804,7 @@ namespace FoodSort
 		{
 			if (CheckWin())
 			{
-				_soundManager.TurnOffMusicBackground(TIME_ANIM_MOVE_STOVE_COVER / 1000);
+				_soundManager.TurnOffMusicBackground(1);
 
 				if (!_isLevelSpecial)
 					for (int i = 0; i < _stoves.Count; i++)

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
   m_Name: 4_Skewermaster
   m_EditorClassIdentifier: 
-  levelStart: 601
+  levelStart: 600
   levelEnd: 1000
   avatar: {fileID: 21300000, guid: a8b34d6e01c75c445aeff47aaa196e1a, type: 3}
   hiddenAvatar: {fileID: 21300000, guid: 8201419f9b163f64ab0f3890d4fffa20, type: 3}

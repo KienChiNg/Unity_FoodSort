@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
   m_Name: 2_StreetCook
   m_EditorClassIdentifier: 
-  levelStart: 101
+  levelStart: 100
   levelEnd: 300
   avatar: {fileID: 21300000, guid: 404a9f4c5a1f624449f2da474771fdb0, type: 3}
   hiddenAvatar: {fileID: 21300000, guid: 394ce2c662485dd459fc8f282d334d6a, type: 3}

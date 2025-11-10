@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed3af4896485bb0429e0e7f320eef907, type: 3}
   m_Name: 6_Grillking
   m_EditorClassIdentifier: 
-  levelStart: 1501
+  levelStart: 1500
   levelEnd: 2000
   avatar: {fileID: 21300000, guid: e8c91d57718e5664ba0a0ecccbc2f903, type: 3}
   hiddenAvatar: {fileID: 21300000, guid: 58a0c6ee7bcf508479ef4a031d199970, type: 3}
