@@ -172,15 +172,22 @@ namespace FoodSort
 			_VFXconfetti?.Stop();
 			_VFXconfetti?.Play();
 			await Task.Delay(500);
-			if (!LevelManager.Instance.MaxFood)
+			if (_isUnlockCharacter)
 			{
-				await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
-				await LoadUnlockNewFoodSlider();
-				await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+				UnlockCharacter();
 			}
-			_VFXcoin?.Stop();
-			_VFXcoin?.Play();
-			CheckButtonDisplay();
+			else
+			{
+				if (!LevelManager.Instance.MaxFood)
+				{
+					await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+					await LoadUnlockNewFoodSlider();
+					await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+				}
+				_VFXcoin?.Stop();
+				_VFXcoin?.Play();
+				CheckButtonDisplay();
+			}
 		}
 		public void CheckAds()
 		{
@@ -239,17 +246,8 @@ namespace FoodSort
 			await ImageScale(_valueGift, 0.3f, true);
 			await ImageScale(_buttonGift, 0.2f, true);
 			_coveringSheet.gameObject.SetActive(false);
-			if (!_isUnlockCharacter)
-			{
-
-				// CheckAdsx0();
-				await SequenceContinue();
-			}
-			else
-			{
-
-				UnlockCharacter();
-			}
+			// CheckAdsx0();
+			await SequenceContinue();
 		}
 		public async void NextLevel(int xCoin = 1)
 		{
@@ -299,15 +297,12 @@ namespace FoodSort
 				_newFood.sprite = LevelManager.Instance.UnlockFoodSO.unlockLevelFoodSOs[LevelManager.Instance.InxUnlock + 1].foodSO.foodSprite;
 				_newFoodTxt.text = LevelManager.Instance.UnlockFoodSO.unlockLevelFoodSOs[LevelManager.Instance.InxUnlock + 1].foodSO.foodName;
 			}
-			else if (!_isUnlockCharacter)
+			else
 			{
 				_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
 				await SequenceContinue();
 			}
-			else if (_isUnlockCharacter)
-			{
-				UnlockCharacter();
-			}
+
 		}
 		public async void UnlockCharacter()
 		{
@@ -325,8 +320,22 @@ namespace FoodSort
 			_uIClickClaimCharacter.ActionAfterClick -= OpenGiftCharacter;
 			await ImageScale(_valueGiftCharacter, 0.3f, true);
 			await ImageScale(_buttonGiftCharacter, 0.2f, true);
-			_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
+
+			GameManager.Instance.StateCoin(true, 200);
+			BoosterManager.Instance.StateExtraBooster(true);
+			BoosterManager.Instance.StateUndoBooster(true);
 			_coveringSheetCharacter.gameObject.SetActive(false);
+
+
+			if (!LevelManager.Instance.MaxFood)
+			{
+				await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+				await LoadUnlockNewFoodSlider();
+				await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+			}
+			_VFXcoin?.Stop();
+			_VFXcoin?.Play();
+			_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
 			await SequenceContinue();
 		}
 		public async Task SequenceContinue()
