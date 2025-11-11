@@ -53,6 +53,8 @@ namespace FoodSort
 		[SerializeField] private TMP_Text _levelDisplayUnlockNext;
 		#endregion
 
+		[SerializeField] private Image _backGroundWin;
+
 		[SerializeField] private UIClick _uIClickNextLevel;
 		[SerializeField] private UIClick _uIClickClaim;
 		[SerializeField] private UIClick _uIClickClaimCharacter;
@@ -76,13 +78,23 @@ namespace FoodSort
 		private Tween _tweenSlider;
 		private Tween _tweenRawImage;
 		private Tween _tweenFly;
+		private Tween _tweenBackgroundWin;
 
 		Sequence seq;
 
 
 		protected override void OnEnable()
 		{
-			base.OnEnable();
+			if (_backGroundWin == null) return;
+
+			Color colorBG = _backGroundWin.color;
+			colorBG.a = 0;
+			_backGroundWin.color = colorBG;
+
+			_tweenBackgroundWin?.Kill();
+			_tweenBackgroundWin = _backGroundWin.DOFade(1, 0.4f);
+
+			GameManager.Instance.SetPauseGame(true);
 
 			_avatarSOs = GameManager.Instance.avatarSOs;
 
