@@ -70,7 +70,7 @@ namespace FoodSort
             if (MaxMediationController.instance.DisplayedBanner)
             {
                 _bottomBar.anchoredPosition = new Vector3(0, 280, 0);
-                _bottomBarProgessAva.anchoredPosition = new Vector3(0, 250, 0);
+                _bottomBarProgessAva.anchoredPosition = new Vector3(0, 40, 0);
             }
             LoadLevelDisplayRank();
         }
