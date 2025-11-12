@@ -130,7 +130,7 @@ namespace FoodSort
 
 			for (int i = 0; i < _avatarSOs.Count; i++)
 			{
-				if (_avatarSOs[i].levelEnd > level) return i;
+				if (_avatarSOs[i].levelEnd >= level) return i;
 			}
 
 			return inx;
@@ -141,7 +141,7 @@ namespace FoodSort
 			LoadLevelDisplayUnlockGift();
 			_characterInx = GetAvatarInx(_level);
 
-			if (_avatarSOs[_characterInx].levelEnd == (_level + 1) && (_level + 1) != 1 && (_level + 1) != _avatarSOs[_avatarSOs.Count - 1].levelEnd)
+			if (_avatarSOs[_characterInx].levelEnd == (_level) && (_level) != 1 && (_level) != _avatarSOs[_avatarSOs.Count - 1].levelEnd)
 			{
 				_isUnlockCharacter = true;
 				_characterGift.sprite = _characterInx + 1 >= _avatarSOs.Count ? _avatarSOs[_characterInx].avatar : _avatarSOs[_characterInx + 1].avatar;

@@ -123,7 +123,7 @@ namespace FoodSort
 
             for (int i = 0; i < _avatarSOs.Count; i++)
             {
-                if (_avatarSOs[i].levelEnd > level) return i;
+                if (_avatarSOs[i].levelEnd >= level) return i;
             }
 
             return inx;
