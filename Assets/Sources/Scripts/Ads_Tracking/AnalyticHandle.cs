@@ -19,6 +19,7 @@ namespace FoodSort
         private const string FirstLoginKey = "FoodSort_FirstLoginDate";
         private const string TotalLTV = "FoodSort_TotalLTV";
         private const string IncrementLTV = "FoodSort_IncrementLTV";
+        private const string IncrementLTVInx = "FoodSort_IncrementLTVInx";
         [SerializeField] private RemoteConfig remoteConfig;
         [SerializeField] private MaxMediationController adManager;
         FirebaseApp app;
@@ -191,17 +192,19 @@ namespace FoodSort
                 float valueTotal = PlayerPrefs.GetFloat(TotalLTV, 0) + valueMoney;
                 float incrementTotal = PlayerPrefs.GetFloat(IncrementLTV, 0) + valueMoney;
 
-
-                float valueIncrementalValues = incrementalValues[GetRevenueBin(valueTotal)];
-
+                float valueIncrementalValues = incrementalValues[PlayerPrefs.GetInt(IncrementLTVInx, 0)];
+                // Debug.Log(value + " " + valueIncrementalValues + " " + incrementTotal + " " + valueTotal);
                 if (incrementTotal >= valueIncrementalValues)
                 {
-                    FirebaseAnalytics.LogEvent("ad_incremental", new Parameter("value", valueIncrementalValues));
+                    FirebaseAnalytics.LogEvent("ad_incremental", new Parameter("value", valueIncrementalValues.ToString()));
 
-                    incrementTotal = 0;
+                    // Debug.Log("Check");
+                    PlayerPrefs.SetFloat(IncrementLTV, 0);
+                    PlayerPrefs.SetInt(IncrementLTVInx, GetRevenueBin(valueTotal));
                 }
+                else
+                    PlayerPrefs.SetFloat(IncrementLTV, incrementTotal);
 
-                PlayerPrefs.SetFloat(IncrementLTV, incrementTotal);
                 PlayerPrefs.SetFloat(TotalLTV, valueTotal);
                 PlayerPrefs.Save();
             }
