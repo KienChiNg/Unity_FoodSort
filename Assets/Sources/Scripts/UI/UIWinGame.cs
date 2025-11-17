@@ -345,7 +345,9 @@ namespace FoodSort
 			_buttonContinue.gameObject.SetActive(true);
 			_ = ImageScale(_coinGain, TIME_ANIM_SCALE_SLIDER_LEVEL);
 
-			await ImageScale(_buttonX3, TIME_ANIM_SCALE_BUTTONX3_LEVEL);
+			if (_level >= 3)
+				await ImageScale(_buttonX3, TIME_ANIM_SCALE_BUTTONX3_LEVEL);
+				
 			await Task.Delay(800);
 			await ImageScale(_buttonContinue, TIME_ANIM_SCALE_BUTTONCONTINUE_LEVEL);
 		}
