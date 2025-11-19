@@ -124,22 +124,12 @@ namespace FoodSort
 		{
 			// _ = DoSequence();
 		}
-		private int GetAvatarInx(int level)
-		{
-			int inx = _avatarSOs.Count - 1;
 
-			for (int i = 0; i < _avatarSOs.Count; i++)
-			{
-				if (_avatarSOs[i].levelEnd >= level) return i;
-			}
-
-			return inx;
-		}
 		async Task DoSequence()
 		{
 			// GameManager gameManager = GameManager.Instance;
 			LoadLevelDisplayUnlockGift();
-			_characterInx = GetAvatarInx(_level);
+			_characterInx = GameManager.Instance.GetAvatarInx(_level);
 
 			if (_avatarSOs[_characterInx].levelEnd == (_level) && (_level) != 1 && (_level) != _avatarSOs[_avatarSOs.Count - 1].levelEnd)
 			{
@@ -347,7 +337,7 @@ namespace FoodSort
 
 			if (_level >= 3)
 				await ImageScale(_buttonX3, TIME_ANIM_SCALE_BUTTONX3_LEVEL);
-				
+
 			await Task.Delay(800);
 			await ImageScale(_buttonContinue, TIME_ANIM_SCALE_BUTTONCONTINUE_LEVEL);
 		}

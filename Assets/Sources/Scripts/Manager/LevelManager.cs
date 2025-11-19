@@ -43,6 +43,7 @@ namespace FoodSort
 		[SerializeField] private UISpecialLevel _uISpecialLevel;
 		[SerializeField] private UnlockFoodSO _unlockFoodSO;
 		[SerializeField] private List<FoodData> _foodSOList;
+		[SerializeField] private List<GameObject> _backGround;
 
 		#region LOADING
 		[SerializeField] private GameObject _loading;
@@ -127,6 +128,7 @@ namespace FoodSort
 			_soundManager = SoundManager.Instance;
 			_gameManager = GameManager.Instance;
 			_uIManager = UIManager.Instance;
+
 		}
 		void Start()
 		{
@@ -217,6 +219,17 @@ namespace FoodSort
 			int loopCount = rawLevel - levelMax;
 			return levelLoop + (loopCount - 1) % (levelMax - levelLoop + 1);
 		}
+		void SetBackground(int level)
+		{
+			int inx = GameManager.Instance.GetAvatarInx(level);
+			for (int i = 0; i < _backGround.Count; i++)
+				_backGround[i].SetActive(false);
+
+			if (_backGround.Count - 1 < inx)
+				_backGround[_backGround.Count - 1].SetActive(true);
+			else
+				_backGround[inx].SetActive(true);
+		}
 		void CreateLevel()
 		{
 			// _isLevelSpecial = false;
@@ -224,6 +237,7 @@ namespace FoodSort
 			// _levelDisplay = 1500;
 
 			CheckNewFood();
+			SetBackground(_levelDisplay);
 			// _levelDisplaySpecial = PlayerPrefs.GetInt(Consts.LEVEL_SAVE_SPECIAL, 1);
 
 			// if (_gameManager.IsSpecialLevel)

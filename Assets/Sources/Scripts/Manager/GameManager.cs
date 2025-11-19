@@ -60,6 +60,17 @@ namespace FoodSort
 		{
 			_isPauseGame = state;
 		}
+		public int GetAvatarInx(int level)
+		{
+			int inx = avatarSOs.Count - 1;
+
+			for (int i = 0; i < avatarSOs.Count; i++)
+			{
+				if (avatarSOs[i].levelEnd >= level) return i;
+			}
+
+			return inx;
+		}
 		public void StateCoin(bool state, int coin)
 		{
 			_coin = state ? _coin + coin : _coin - coin;

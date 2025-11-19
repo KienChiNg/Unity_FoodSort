@@ -78,11 +78,12 @@ namespace FoodSort
         {
             int level = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
             // int level = 2001;
-            int inx = GetAvatarInx(level);
+            int inx = GameManager.Instance.GetAvatarInx(level);
 
             GameManager.Instance.inxProgess = inx;
 
             AvatarSO avatar = _avatarSOs[inx];
+            int levelMinus = inx - 1 >= 0 ? _avatarSOs[inx - 1].levelEnd : 0;
             int levelSlider = Mathf.Clamp(level, 0, avatar.levelEnd);
 
             for (int i = 0; i < progessHomeDatas.Count; i++)
@@ -98,7 +99,7 @@ namespace FoodSort
             _levelBtn.text = $"Level {level}";
             _levelRank.text = $"{levelSlider}/{avatar.levelEnd}";
 
-            float preValue = SLIDER_WIDTH_MAX * levelSlider / avatar.levelEnd;
+            float preValue = SLIDER_WIDTH_MAX * (levelSlider - levelMinus) / (avatar.levelEnd - levelMinus);
             Vector2 sizeX = _slider.sizeDelta;
             sizeX.x = preValue;
             _slider.sizeDelta = sizeX;
@@ -116,17 +117,6 @@ namespace FoodSort
                     uIProgressAva.SetAvatar(_avatarSOs[i].avatar, _avatarSOs[i].levelStart, _avatarSOs[i].avaName);
                 uIProgressAva.gameObject.SetActive(true);
             }
-        }
-        private int GetAvatarInx(int level)
-        {
-            int inx = _avatarSOs.Count - 1;
-
-            for (int i = 0; i < _avatarSOs.Count; i++)
-            {
-                if (_avatarSOs[i].levelEnd >= level) return i;
-            }
-
-            return inx;
         }
         public async void Play()
         {
