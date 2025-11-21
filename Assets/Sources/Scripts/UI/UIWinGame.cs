@@ -150,10 +150,10 @@ namespace FoodSort
 			_character.gameObject.SetActive(true);
 			_coinHeader.gameObject.SetActive(true);
 			_victoryImg.gameObject.SetActive(true);
-			_sliderImg.gameObject.SetActive(true);
-			_giftImg.gameObject.SetActive(true);
+			_sliderImg.gameObject.SetActive(!GameManager.Instance.IsSpecialLevel);
+			_giftImg.gameObject.SetActive(!GameManager.Instance.IsSpecialLevel);
 
-			_levelDisplay.gameObject.SetActive(true);
+			_levelDisplay.gameObject.SetActive(!GameManager.Instance.IsSpecialLevel);
 
 			await Task.Delay(500);
 			await ImageScale(_victoryImg, TIME_ANIM_SCALE);

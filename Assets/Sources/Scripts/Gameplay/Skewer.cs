@@ -22,6 +22,7 @@ namespace FoodSort
 		private const float TIME_ANIM_FLY_FOR_SAME_FOOD = 0.1f;
 		private const float HEIGHT_PARABOLA = 1f;
 		private const float TIME_ANIM_FLY = 0.6f;
+		private const float TIME_ANIM_FLY_TO_CUSTOMER = 0.6f;
 		private const float TIME_ANIM_FADE = 0.1f;
 		private const int SEGMENTS_POINT = 30;
 
@@ -35,6 +36,7 @@ namespace FoodSort
 		private LevelManager _levelManager;
 		private BoosterManager _boosterManager;
 		private UIManager _uIManager;
+		private OrderManager OrderManager => OrderManager.Instance;
 
 		private List<Food> _foodsInSkewer;
 		private List<Food> _sameFoodsInSkewer = new List<Food>();
@@ -58,6 +60,7 @@ namespace FoodSort
 		private bool _onPlate;
 		private bool _onTop;
 		private bool _isDoneSpecial;
+		private bool _isAlmostMovingInCustomer;
 		private float _posTopFly;
 
 		public int InxSkewer { get => _inxSkewer; set => _inxSkewer = value; }
@@ -66,6 +69,7 @@ namespace FoodSort
 		public int NumUndo { get => _numUndo; set => _numUndo = value; }
 		public bool IsDone { get => _isDone; set => _isDone = value; }
 		public bool OnPlate { get => _onPlate; set => _onPlate = value; }
+		public bool IsAlmostMovingInCustomer => _isAlmostMovingInCustomer;
 
 		void Awake()
 		{
@@ -206,7 +210,7 @@ namespace FoodSort
 		}
 		public async Task SkewerAnimMoveInPlate(Vector2 targetPoint, bool undo)
 		{
-			_onPlate = true;
+			_onPlate = true; // RENAME
 
 			// _stove.AfterSkewerDone();
 			_tweenMove?.Kill();
@@ -242,6 +246,58 @@ namespace FoodSort
 
 			_skewerOnPlateVFX?.Stop();
 			_skewerOnPlateVFX?.Play();
+
+			await _tweenMove.AsyncWaitForCompletion();
+		}
+		public async Task SkewerAnimMoveInCustomer(Vector2 targetPoint)
+		{
+			_isAlmostMovingInCustomer = false;
+			_onPlate = true;
+
+			// _stove.AfterSkewerDone();
+			_tweenMove?.Kill();
+
+			// await Task.Delay(400);
+			// _uIManager.ShowTexFirer();
+			_soundManager.PlayFoodMove();
+			foreach (Food food in _foodsInSkewer)
+				food.PlayCompleteInStove();
+
+			await Task.Delay(600);
+
+			Vector3[] path = GenerateParabola(this.transform.position, new Vector3(targetPoint.x, targetPoint.y, 0), targetPoint.y + HEIGHT_PARABOLA, SEGMENTS_POINT);
+
+			_ = SkewerScaleOut(Vector2.one);
+			_tweenMove = this.transform.DOPath(path, TIME_ANIM_FLY_TO_CUSTOMER, PathType.CatmullRom, PathMode.Full3D, 30)
+					 .SetUpdate(UpdateType.Fixed)
+					 .SetEase(Ease.InOutSine)
+					 .OnComplete(() =>
+					 {
+						 List<Func<Task>> actions = new List<Func<Task>>();
+
+						 actions.Add(() => SkewerScaleIn(new Vector2(1.25f, 0.9f)));
+						 actions.Add(() => SkewerScaleOut(Vector2.one));
+
+						 _ = RunSequence(actions);
+
+					 });
+			await Task.Delay(Mathf.FloorToInt(TIME_ANIM_FLY_TO_CUSTOMER * 1000 / 4));
+
+			// if (!undo)
+				_ = _stove.CloseLid();
+
+			await Task.Delay(Mathf.FloorToInt(TIME_ANIM_FLY_TO_CUSTOMER * 1000 / 8));
+			_isAlmostMovingInCustomer = true;
+
+			await Task.Delay(Mathf.FloorToInt(TIME_ANIM_FLY_TO_CUSTOMER * 1000 / 4));
+			_ = SkeweFade(0f);
+			for (int i = 0; i < _foodsInSkewer.Count; i++)
+			{
+				_ = _foodsInSkewer[i].FoodFade(0f);
+			}
+
+			// _skewerOnPlateVFX?.Stop();
+			// _skewerOnPlateVFX?.Play();
 
 			await _tweenMove.AsyncWaitForCompletion();
 		}
@@ -405,16 +461,32 @@ namespace FoodSort
 			{
 
 				_isDone = true;
-				if (_levelManager.IsLevelSpecial)
-				{
-					_isDoneSpecial = true;
-					await CheckFullFood();
-					_levelManager.WinLevel();
-				}
-				else
-				{
-					AddSkewerOnPlate();
-				}
+
+				switch (_levelManager.LevelSpecialType)
+                {
+					case LevelSpecialType.None:
+						AddSkewerOnPlate();
+						break;
+
+					case LevelSpecialType.LongSkewer:
+						_isDoneSpecial = true;
+						await CheckFullFood();
+						_levelManager.WinLevel();
+						break;
+
+					case LevelSpecialType.Order:
+						if (OrderManager.TryDeliverFood(food.Value))
+                        {
+							AddSkewerOnCustomer();
+                        }
+						else
+                        {
+							OrderManager.OnCompleteIncorrectOrder?.Invoke();
+							await SkeweFade(0f);
+							await _stove.CloseLid();
+                        }
+						break;
+                }
 			}
 		}
 		public async Task CheckFullFood()
@@ -493,6 +565,14 @@ namespace FoodSort
 		{
 			_plate.AddSkewerOnPlate(this);
 		}
+		void AddSkewerOnCustomer()
+		{
+			OrderManager.AddSkewerOnCustomer(this);
+		}
+		void MakeCustomerSad()
+        {
+			OrderManager.MakeCustomerSad();
+        }
 		public void AddFoodOnSkewer(Food food)
 		{
 			_foodsInSkewer.Add(food);

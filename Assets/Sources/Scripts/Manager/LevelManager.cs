@@ -15,15 +15,29 @@ namespace FoodSort
 {
 	public class LevelResult
 	{
-		public int step;
 		public int level = 0;
-		public string result;
-		public float duration;
 		public string action_name;
+		public string result;
+		public float start_time;
+		public string start_date_time;
+
+		public int step = 0;
+		public float duration;
+
 		public int is_use_booster = 0;
+		public int is_use_booster_undo = 0;
+		public int is_use_booster_extra = 0;
+
 		public int is_view_ads = 0;
-		public float startTime;
 	}
+
+	public enum LevelSpecialType
+	{
+		None = -1,
+		LongSkewer = 0,
+		Order = 10,
+	}
+
 	public class LevelManager : MonoBehaviour
 	{
 		private const float TIME_DEFAULT_ANIM_LOADING = 2f;
@@ -34,11 +48,13 @@ namespace FoodSort
 		private const int TIME_WAIT_REPLAY = 3;
 		private const float TIME_ANIM_SCALE = 0.2f;
 		private const float STOVE_STORAGE_SCALE_INIT = 1f;
+		private const int TIME_TIMER_START_WARNING = 10;
 
 		[SerializeField] private Transform _stoveStorage;
 		[SerializeField] private Stove _stoveTemplete;
 		[SerializeField] private Header _header;
 		[SerializeField] private UIWinGame _uIWinGame;
+		[SerializeField] private UILoseGame _uILoseGame;
 		[SerializeField] private UIRateUs _uIRateUs;
 		[SerializeField] private UISpecialLevel _uISpecialLevel;
 		[SerializeField] private UnlockFoodSO _unlockFoodSO;
@@ -55,14 +71,23 @@ namespace FoodSort
 
 		public Action<int> OnLevelStart;
 		public Action<int> OnNumStove;
+		public Action<int> OnTimerUpdate;
+		public Action OnTimerWarning;
 
-		private SoundManager _soundManager;
-		private GameManager _gameManager;
-		private UIManager _uIManager;
+		private SoundManager _soundManager => SoundManager.Instance;
+		private GameManager _gameManager => GameManager.Instance;
+		private UIManager _uIManager => UIManager.Instance;
+		private OrderManager OrderManager => OrderManager.Instance;
 
+		private bool isWin;
 		private int _levelDisplay;
 		private int _inxUnlock;
 		private int _levelDisplaySpecial;
+		private LevelSpecialType _levelSpecialType;
+		private bool _levelHasTimer;
+		private float _levelMaxTime;
+		private float _levelRemainTime;
+		private bool _isStartlevelTimer;
 		private int _valueUnlockNewFood;
 		private int _nextUnlockNewFood;
 		private int _stoveSmokeLight;
@@ -87,6 +112,7 @@ namespace FoodSort
 		private Tween _tweenFade;
 		private Tween _tweenScaleLoading;
 
+		public bool IsWin => isWin;
 		public LevelData LevelData { get => _levelData; }
 		public Header Header { get => _header; set => _header = value; }
 		public List<Stove> Stoves { get => _stoves; set => _stoves = value; }
@@ -94,6 +120,12 @@ namespace FoodSort
 		public int SkewerHaveFood { get => _skewerHaveFood; set => _skewerHaveFood = value; }
 		public int LevelDisplay { get => _levelDisplay; set => _levelDisplay = value; }
 		public bool IsLevelSpecial { get => _isLevelSpecial; set => _isLevelSpecial = value; }
+		public bool LevelHasTimer { get => _levelHasTimer; set => _levelHasTimer = value; }
+		public LevelSpecialType LevelSpecialType { get => _levelSpecialType; set => _levelSpecialType = value; }
+		public float LevelMaxTime { get => _levelMaxTime; set => _levelMaxTime = value; }
+		public float LevelRemainTime { get => _levelRemainTime; set => _levelRemainTime = value; }
+		public bool IsStartlevelTimer { get => _isStartlevelTimer; set => _isStartlevelTimer = value; }
+		public bool IsSpecialLevel => GameManager.Instance.IsSpecialLevel;
 		public int SkekwerFoodCount { get => _skekwerFoodCount; set => _skekwerFoodCount = value; }
 		public int ValueUnlockNewFood { get => _valueUnlockNewFood; set => _valueUnlockNewFood = value; }
 		public int NextUnlockNewFood { get => _nextUnlockNewFood; set => _nextUnlockNewFood = value; }
@@ -124,15 +156,10 @@ namespace FoodSort
 			{
 				Instance = this;
 			}
-
-			_soundManager = SoundManager.Instance;
-			_gameManager = GameManager.Instance;
-			_uIManager = UIManager.Instance;
-
 		}
 		void Start()
 		{
-
+			isWin = false;
 			StartGame();
 
 			_currentTime = Time.time;
@@ -165,24 +192,33 @@ namespace FoodSort
 			List<UnlockLevelFoodSO> unlockLevelFoodSOs = _unlockFoodSO.unlockLevelFoodSOs;
 
 			unlockLevelFoodSOs = unlockLevelFoodSOs.OrderBy(f => f.lvUnlock).ToList();
+			for (int i = 0; i < unlockLevelFoodSOs.Count; i++)
+				Debug.Log($"[{i}] Food: {unlockLevelFoodSOs[i].foodSO.name}, Unlock at = {unlockLevelFoodSOs[i].lvUnlock}");
 			_inxUnlock = unlockLevelFoodSOs.Count - 1;
 			_valueUnlockNewFood = 0;
 			for (int i = 0; i < unlockLevelFoodSOs.Count; i++)
 			{
 				UnlockLevelFoodSO unlockFood = unlockLevelFoodSOs[i];
 				FoodSO foodSO = unlockFood.foodSO;
-				if (_levelDisplay <= unlockLevelFoodSOs[i].lvUnlock)
+				Debug.Log($"Checking index {i}: Food = {foodSO.name}, lvUnlock = {unlockFood.lvUnlock}");
+				if (_levelDisplay <= unlockFood.lvUnlock)
 				{
 					if (_levelDisplay - 1 == unlockLevelFoodSOs[i - 1].lvUnlock)
+					{
 						_isUnlockNewFood = true;
+						Debug.Log("Player JUST UNLOCKED NEW FOOD");
+					}
 
 					_inxUnlock = i - 1;
 					break;
 				}
 				if (!keyValuePairsFood.ContainsKey(foodSO.typeFood))
 				{
+					Debug.Log($"Creating new type group: {foodSO.typeFood}");
 					keyValuePairsFood[foodSO.typeFood] = new List<FoodSO>();
 				}
+
+				Debug.Log($"Adding {foodSO.name} (type {foodSO.typeFood}) to unlocked list");
 				keyValuePairsFood[foodSO.typeFood].Add(foodSO);
 			}
 
@@ -194,6 +230,8 @@ namespace FoodSort
 			{
 				_valueUnlockNewFood = unlockLevelFoodSOs[_inxUnlock].lvUnlock;
 				_nextUnlockNewFood = unlockLevelFoodSOs[_inxUnlock + 1].lvUnlock;
+				Debug.Log($"Last unlocked food level:      LV = {_valueUnlockNewFood}");
+				Debug.Log($"Next unlock required at level: LV = {_nextUnlockNewFood}");
 			}
 
 			PlayerPrefs.SetInt(Consts.LEVEL_NEW_FOOD, _inxUnlock);
@@ -201,6 +239,7 @@ namespace FoodSort
 
 			foreach (KeyValuePair<int, List<FoodSO>> pair in keyValuePairsFood)
 			{
+				Debug.Log($"Creating FoodData for typeFood = {pair.Key}, count = {pair.Value.Count}");
 				FoodData foodData = new FoodData();
 				List<FoodSO> foodSOs = new List<FoodSO>();
 				foreach (FoodSO food in pair.Value)
@@ -232,29 +271,45 @@ namespace FoodSort
 		}
 		void CreateLevel()
 		{
-			// _isLevelSpecial = false;
-			_levelDisplay = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
-			// _levelDisplay = 1500;
+			TextAsset[] allTextAsset;
+			int realLv;
+			TextAsset jsonFile;
 
+			_levelDisplay = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
 			CheckNewFood();
 			SetBackground(_levelDisplay);
-			// _levelDisplaySpecial = PlayerPrefs.GetInt(Consts.LEVEL_SAVE_SPECIAL, 1);
 
-			// if (_gameManager.IsSpecialLevel)
-			// 	_isLevelSpecial = true;
+			if (IsSpecialLevel)
+			{
+				PlayerPrefs.SetInt(Consts.LEVEL_SAVE_SPECIAL, PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1) / Consts.LEVEL_SPECIAL_SPACE); // fix lv
+				_levelDisplaySpecial = PlayerPrefs.GetInt(Consts.LEVEL_SAVE_SPECIAL, 1);
+				allTextAsset = Resources.LoadAll<TextAsset>($"DataSpecial");
+				LevelSpecialType = LevelSpecialType.Order; // json
 
-			TextAsset[] allTextAsset = Resources.LoadAll<TextAsset>($"Data");
-
-			int realLv = CalculateLevel(_levelDisplay, 1000, 50);
-
-			// if (_isLevelSpecial)
-			// {
-			// 	allTextAsset = Resources.LoadAll<TextAsset>($"DataSpecial");
-			// 	realLv = CalculateLevel(_levelDisplaySpecial, 2596, 100);
-			// 	_uIManager.SetupSpecial();
-
-			// 	StartAnalytic();
-			// }
+				OrderData orderData = new();
+				int[] orderFoodsIdx = new int[] {1, 2, 3}; // json
+				orderData.orderFoodsIdx = orderFoodsIdx;
+				OrderManager.Init(orderData);
+				_levelHasTimer = true; // json
+				_levelMaxTime = 30; // json
+				_levelRemainTime = _levelMaxTime;
+				_isStartlevelTimer = false;
+				OnTimerUpdate?.Invoke((int)LevelRemainTime);
+				//realLv = CalculateLevel(_levelDisplaySpecial, 2596, 100);
+				realLv = CalculateLevel(_levelDisplaySpecial, 1, 1); // rewrite
+				_uIManager.SetupSpecial();
+				//StartAnalytic();
+				jsonFile = allTextAsset[Mathf.FloorToInt((float)(realLv - 1) / 500)];
+			}
+			else
+			{
+				_levelDisplay = PlayerPrefs.GetInt(Consts.LEVEL_SAVE, 1);
+				// _levelDisplay = 200;
+				allTextAsset = Resources.LoadAll<TextAsset>($"Data");
+				LevelSpecialType = LevelSpecialType.None;
+				realLv = CalculateLevel(_levelDisplay, 1000, 50);
+				jsonFile = allTextAsset[Mathf.FloorToInt((float)(realLv - 1) / 100)];
+			}
 
 			// for (int i = 0; i < allTextAsset.Length; i++)
 			// {
@@ -294,54 +349,50 @@ namespace FoodSort
 			// 	}
 			// }
 
-			TextAsset jsonFile = allTextAsset[Mathf.FloorToInt((float)(realLv - 1) / 100)];
+			Debug.Assert(jsonFile != null);
 
-			if (jsonFile != null)
+			var rootNode = JSON.Parse(jsonFile.text);
+			JSONArray levels = rootNode["levels"].AsArray;
+
+			var level = levels[(realLv - 1) % (IsSpecialLevel ? 500 : 100)];
+			JSONArray skewerDatas = level["tubes"].AsArray;
+
+			_levelData = new LevelData();
+			StoveData[] stoveDatas = new StoveData[skewerDatas.Count];
+
+			for (int i = 0; i < skewerDatas.Count; i++)
 			{
-				var rootNode = JSON.Parse(jsonFile.text);
-				JSONArray levels = rootNode["levels"].AsArray;
+				JSONArray skewer = skewerDatas[i].AsArray;
 
-				var level = levels[(realLv - 1) % 100];
-				JSONArray skewerDatas = level["tubes"].AsArray;
+				SkewerData skewerData = new SkewerData();
 
-				_levelData = new LevelData();
-				StoveData[] stoveDatas = new StoveData[skewerDatas.Count];
+				int[] foods = new int[skewer.Count];
 
-				for (int i = 0; i < skewerDatas.Count; i++)
+				for (int j = 0; j < skewer.Count; j++)
 				{
-					JSONArray skewer = skewerDatas[i].AsArray;
+					foods[j] = skewer[j];
 
-					SkewerData skewerData = new SkewerData();
-
-					int[] foods = new int[skewer.Count];
-
-					for (int j = 0; j < skewer.Count; j++)
-					{
-						foods[j] = skewer[j];
-
-						if (foods[j] > 0) _skewerHaveFood++;
-					}
-					skewerData.foods = foods;
-					stoveDatas[i] = new StoveData();
-					stoveDatas[i].skewerData = skewerData;
+					if (foods[j] > 0) _skewerHaveFood++;
 				}
-				_levelData.stoveDatas = stoveDatas;
-
-				_skekwerFoodCount = CountSameFood(_levelData);
-				RandomSprite(_levelData);
-				CreateStove(_levelData.stoveDatas.Length);
-
-				_skewerHaveFood /= _skekwerFoodCount;
-				OnLevelStart?.Invoke(_levelDisplay);
-				// OnNumStove?.Invoke(_skewerHaveFood);
-				_header.Plate.SpritePointsOnX(_skewerHaveFood);
-
-
-				levelResult = new LevelResult();
-				levelResult.step = 0;
-				levelResult.startTime = Time.time;
-				levelResult.level = _levelDisplay;
+				skewerData.foods = foods;
+				stoveDatas[i] = new StoveData();
+				stoveDatas[i].skewerData = skewerData;
 			}
+			_levelData.stoveDatas = stoveDatas;
+
+			_skekwerFoodCount = CountSameFood(_levelData);
+			//RandomSprite(_levelData);
+			CreateStove(_levelData.stoveDatas.Length);
+
+			_skewerHaveFood /= _skekwerFoodCount;
+			OnLevelStart?.Invoke(_levelDisplay);
+			// OnNumStove?.Invoke(_skewerHaveFood);
+			_header.Plate.SpritePointsOnX(_skewerHaveFood);
+
+			levelResult = new LevelResult();
+			levelResult.start_time = Time.time;
+			levelResult.start_date_time = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+			levelResult.level = _levelDisplay;
 
 			StartAnalytic();
 		}
@@ -351,23 +402,23 @@ namespace FoodSort
 		}
 		public void OpenSpecialLevel()
 		{
-			// _skewerCanSelect++;
+			_skewerCanSelect++;
 
-			// if (_skewerCanSelect == _stoves.Count)
-			// {
-			// 	if (!_gameManager.IsSpecialLevel
-			// 		&& !_gameManager.BreakSpecialLevel
-			// 		&& _levelDisplay > Consts.LEVEL_SPECIAL_SPACE
-			// 		&& (_levelDisplay - 1) % Consts.LEVEL_SPECIAL_SPACE == 0
-			// 		)
-			// 	{
-			// 		// _isLevelSpecial = true;
-			// 		_uISpecialLevel?.gameObject.SetActive(true);
-			// 	}
+			if (_skewerCanSelect == _stoves.Count)
+			{
+				if (!_gameManager.IsSpecialLevel
+					&& !_gameManager.BreakSpecialLevel
+					&& _levelDisplay > Consts.LEVEL_SPECIAL_SPACE
+					&& (_levelDisplay - 1) % Consts.LEVEL_SPECIAL_SPACE == 0
+					)
+				{
+					_isLevelSpecial = true;
+					_uISpecialLevel.gameObject.SetActive(true);
+				}
 
-			// 	if (_levelDisplay < Consts.LEVEL_SPECIAL_SPACE || (_levelDisplay - 1) % Consts.LEVEL_SPECIAL_SPACE != 0 || _gameManager.BreakSpecialLevel)
-			// 		StartAnalytic();
-			// }
+				// if (_levelDisplay < Consts.LEVEL_SPECIAL_SPACE || (_levelDisplay - 1) % Consts.LEVEL_SPECIAL_SPACE != 0 || _gameManager.BreakSpecialLevel)
+				// 	StartAnalytic();
+			}
 		}
 		public bool CheckMaxStove()
 		{
@@ -473,7 +524,7 @@ namespace FoodSort
 			{
 				int inxFood = 0;
 				int rand = 0;
-				if (i == 0 && _isUnlockNewFood)//*lấy ra giá trị cuối cùng là giá trị topping mới unlock 
+				if (i == 0 && _isUnlockNewFood)//*lấy ra giá trị cuối cùng là giá trị topping mới unlock
 				{
 					// for (int j = 0; j < foodCountInDicQueue[typeNewFood].Count; j++)
 					// {
@@ -719,6 +770,8 @@ namespace FoodSort
 
 				if (hit == null) return;
 
+				IsStartlevelTimer = true;
+
 				_skewerSelect = hit.GetComponent<Skewer>();
 
 				_skewerSelect.MouseDown();
@@ -726,6 +779,25 @@ namespace FoodSort
 			if (Input.GetMouseButtonUp(0))
 			{
 				_skewerSelect?.MouseUp();
+			}
+			if (LevelHasTimer && IsStartlevelTimer)
+			{
+				float newRemainTime = LevelRemainTime - Time.deltaTime;
+				float sec = Mathf.Ceil(newRemainTime);
+
+				if (sec <= LevelRemainTime)
+				{
+					OnTimerUpdate?.Invoke((int)sec);
+
+					if (sec == TIME_TIMER_START_WARNING) OrderManager.OnOrderTimerWarning?.Invoke();
+					if (0 <= sec && sec <= TIME_TIMER_START_WARNING) OnTimerWarning?.Invoke();
+				}
+
+				LevelRemainTime = Mathf.Max(newRemainTime, 0f);
+				if (LevelRemainTime <= 0f && !isWin)
+				{
+					_uILoseGame.gameObject.SetActive(true);
+				}
 			}
 		}
 		public void ResetSkewerSelect()
@@ -803,28 +875,46 @@ namespace FoodSort
 		}
 		public bool CheckWin()
 		{
-			for (int i = 0; i < _stoves.Count; i++)
-			{
-				Skewer skewer = _stoves[i].SkewerOnStove;
-				if (skewer.IsOnPlate()) continue;
-				if (skewer.CheckEmptySlotOnSkewer()) continue;
-				if (!_isLevelSpecial && skewer.GetFoodsInSkewer().Count > 0) return false;
-				if (!skewer.CheckFullSameFood()) return false;
-				if (_isLevelSpecial && !skewer.CheckIsFullSpecial()) return false;
-			}
-			return true;
+			if (_levelHasTimer && _levelRemainTime <= 0) return false;
+			if (LevelSpecialType == LevelSpecialType.Order)
+            {
+				return OrderManager.IsCompletedAllOrders();
+            }
+			else
+            {
+				for (int i = 0; i < _stoves.Count; i++)
+				{
+					Skewer skewer = _stoves[i].SkewerOnStove;
+					if (skewer.IsOnPlate()) continue;
+					if (skewer.CheckEmptySlotOnSkewer()) continue;
+					if (!_isLevelSpecial && skewer.GetFoodsInSkewer().Count > 0) return false;
+					if (!skewer.CheckFullSameFood()) return false;
+					if (_isLevelSpecial && !skewer.CheckIsFullSpecial()) return false;
+				}
+				return true;
+            }
 		}
 		public async void WinLevel()
 		{
 			if (CheckWin())
 			{
+				isWin = true;
+
 				_soundManager.TurnOffMusicBackground(1);
 
-				if (!_isLevelSpecial)
-					for (int i = 0; i < _stoves.Count; i++)
-					{
-						_ = _stoves[i].AfterWinGame();
-					}
+				switch (LevelSpecialType)
+                {
+					case LevelSpecialType.None:
+						for (int i = 0; i < _stoves.Count; i++)
+						{
+							_ = _stoves[i].AfterWinGame();
+						}
+						break;
+
+					case LevelSpecialType.Order:
+						OrderManager.AfterWinGame();
+						break;
+                }
 				await Task.Delay(TIME_ANIM_MOVE_STOVE_COVER);
 
 				OnLevelStart?.Invoke(_levelDisplay);
@@ -832,7 +922,7 @@ namespace FoodSort
 				_uIWinGame?.gameObject.SetActive(true);
 				_uIWinGame.SetLevelDisplay(_levelDisplay);
 
-				if (_isLevelSpecial)
+				if (IsSpecialLevel)
 				{
 					PlayerPrefs.SetInt(Consts.LEVEL_SAVE_SPECIAL, ++_levelDisplaySpecial);
 					_gameManager.IsSpecialLevel = false;
@@ -853,7 +943,7 @@ namespace FoodSort
 
 				if (levelResult != null)
 				{
-					levelResult.duration = Time.time - levelResult.startTime;
+					levelResult.duration = Time.time - levelResult.start_time;
 					levelResult.action_name = "end";
 					levelResult.result = "win";
 

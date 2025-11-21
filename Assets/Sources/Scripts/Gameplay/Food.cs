@@ -91,17 +91,17 @@ namespace FoodSort
 		{
 			_background.sortingOrder = order;
 		}
-		public async Task FoodFade()
+		public async Task FoodFade(float alpha = ALPHA_ONENABLE, float time = TIME_ANIM_FADE)
 		{
 			_tweenBackground?.Kill();
 			SpriteRenderer bg = _isHide ? _backgroundHidden : _background;
-			_tweenBackground = bg.DOFade(ALPHA_ONENABLE, TIME_ANIM_FADE)
-											.OnComplete(() =>
-											{
-												Color c = bg.color;
-												c.a = 1;
-												bg.color = c;
-											});
+			_tweenBackground = bg.DOFade(alpha, time);
+				// .OnComplete(() =>
+				// {
+				// 	Color c = bg.color;
+				// 	c.a = 1;
+				// 	bg.color = c;
+				// });
 
 			await _tweenBackground.AsyncWaitForCompletion();
 		}

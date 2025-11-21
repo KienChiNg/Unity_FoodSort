@@ -22,6 +22,7 @@ namespace FoodSort
 		public AudioClip audioFoodMove;
 		public AudioClip audioStoveCover;
 		public List<AudioClip> audioStoveSparks;
+		public List<AudioClip> audioCabyHmms;
 		public AudioClip audioSkewerDone;
 		public AudioClip audioWin;
 		public AudioClip audioLose;
@@ -148,6 +149,10 @@ namespace FoodSort
 		{
 			_audioSource.PlayOneShot(audioStoveSparks[inx], _isVolume * 0.45f);
 		}
+		public void PlayCabyHmm()
+        {
+			_audioSource.PlayOneShot(audioCabyHmms[Random.Range(0, audioCabyHmms.Count)], _isVolume);
+        }
 		public void PlayWin()
 		{
 			_audioSource.PlayOneShot(audioWin, _isVolume);

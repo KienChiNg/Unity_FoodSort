@@ -49,6 +49,12 @@ TagManager:
   - name: Header
     uniqueID: 3812357745
     locked: 0
+  - name: Order
+    uniqueID: 1473081917
+    locked: 0
+  - name: Table
+    uniqueID: 1842140523
+    locked: 0
   - name: Stove
     uniqueID: 273929943
     locked: 0
@@ -57,6 +63,9 @@ TagManager:
     locked: 0
   - name: Food
     uniqueID: 3438746089
+    locked: 0
+  - name: Lid
+    uniqueID: 1445954719
     locked: 0
   - name: VFX
     uniqueID: 3530201315

@@ -43,9 +43,9 @@ namespace FoodSort
 		}
 		public void SetupSpecial()
 		{
-			_uIHeaderGameplay.gameObject.SetActive(false);
-			_uIMainBGGameplay.transform.position = new Vector3(0, -1.7f, 0);
-			_stoveStorage.position = new Vector3(0, -1.55f, 0);
+			_uIHeaderGameplay.SetActive(false);
+			// _uIMainBGGameplay.transform.position = new Vector3(0, -1.7f, 0);
+			// _stoveStorage.position = new Vector3(0, -1.55f, 0);
 		}
 		public void ShowCoin()
 		{

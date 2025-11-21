@@ -7,7 +7,7 @@ namespace FoodSort
 {
 	public class BoosterManager : MonoBehaviour
 	{
-		public static BoosterManager Instance; 
+		public static BoosterManager Instance;
 		[SerializeField] private UIClick _uIClickUndo;
 		[SerializeField] private UIClick _uIClickExtra;
 		[SerializeField] private TMP_Text _textNotice;
@@ -66,7 +66,10 @@ namespace FoodSort
 		public void StateUndoBooster(bool state)
 		{
 			if (!state && LevelManager.Instance.levelResult != null)
-				LevelManager.Instance.levelResult.is_use_booster = 1;
+            {
+                LevelManager.Instance.levelResult.is_use_booster = 1;
+				LevelManager.Instance.levelResult.is_use_booster_undo = 1;
+            }
 
 			_numOfUndo = !state ? _numOfUndo - 1 : _numOfUndo + 3;
 
@@ -80,7 +83,10 @@ namespace FoodSort
 		public void StateExtraBooster(bool state)
 		{
 			if (!state && LevelManager.Instance.levelResult != null)
-				LevelManager.Instance.levelResult.is_use_booster = 1;
+            {
+                LevelManager.Instance.levelResult.is_use_booster = 1;
+				LevelManager.Instance.levelResult.is_use_booster_extra = 1;
+            }
 
 			_numOfExtra = !state ? _numOfExtra - 1 : _numOfExtra + 1;
 
@@ -146,7 +152,7 @@ namespace FoodSort
 				return;
 			}
 
-			TutorialManager.Instance.ResetTimeCheck(LevelManager.Instance.LevelDisplay); 
+			TutorialManager.Instance.ResetTimeCheck(LevelManager.Instance.LevelDisplay);
 
 			_levelManager.AddStove();
 

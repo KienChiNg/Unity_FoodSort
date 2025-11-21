@@ -812,6 +812,10 @@ MonoBehaviour:
   audioStoveSparks:
   - {fileID: 8300000, guid: 78ec40cfa36db0747bb0cfe8d2a716c6, type: 3}
   - {fileID: 8300000, guid: 78b83a57b21e18e429fae57bd1e1f893, type: 3}
+  audioCabyHmms:
+  - {fileID: 8300000, guid: 3d9f8aaf392c543f0a12f0556531505b, type: 3}
+  - {fileID: 8300000, guid: df9545ab888cd478dac407ae701383f5, type: 3}
+  - {fileID: 8300000, guid: c2b30394b808a48d7b5e5cbc261bf0b7, type: 3}
   audioSkewerDone: {fileID: 8300000, guid: 26babf890bfd5bf41810cbbfa3e0c9b9, type: 3}
   audioWin: {fileID: 8300000, guid: 1e20712158846ba4a91ebf3ad0fe5944, type: 3}
   audioLose: {fileID: 8300000, guid: 97d2062a03ced354185be186953a73fc, type: 3}
@@ -1271,6 +1275,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3285dd628207e3945b17bf14ded8c5e2, type: 2}
   - {fileID: 11400000, guid: 0a3d421466ea6c94a99b6ee8ef4cabac, type: 2}
   - {fileID: 11400000, guid: a12ce71f68e7a7b468fb9f7992001445, type: 2}
+  inxProgess: 0
 --- !u!4 &1778937665
 Transform:
   m_ObjectHideFlags: 0
