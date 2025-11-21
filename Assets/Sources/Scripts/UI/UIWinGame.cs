@@ -22,6 +22,7 @@ namespace FoodSort
 		private const int SEGMENTS_POINT = 30;
 
 		#region SEQUENCE
+		[Header("Sequence")]
 		[SerializeField] private Transform _mainUI;
 		[SerializeField] private Transform _coinHeader;
 		[SerializeField] private Transform _coinGain;
@@ -38,7 +39,24 @@ namespace FoodSort
 		[SerializeField] private Transform _valueGiftCharacter;
 		[SerializeField] private Transform _buttonGiftCharacter;
 		[SerializeField] private Transform _giftChild;
+		[SerializeField] private Transform _apprentice;
 		[SerializeField] private Animator _giftAnim;
+		#endregion
+
+
+		#region NEXTFOOD
+		[Header("NextFood")]
+		[SerializeField] private RectTransform _slider;
+		[SerializeField] private TMP_Text _levelDisplayUnlockPre;
+		[SerializeField] private TMP_Text _levelDisplayUnlockNext;
+		#endregion
+
+		#region APPRENTICE
+		[Header("Apprentice")]
+		[SerializeField] private RectTransform _sliderApprentice;
+		[SerializeField] private Image _character;
+		[SerializeField] private Image _nextCharacter;
+		[SerializeField] private TMP_Text _levelDisplayApprentice;
 		#endregion
 
 		[SerializeField] private RawImage _rawImage;
@@ -47,19 +65,13 @@ namespace FoodSort
 		[SerializeField] private ParticleSystem _VFXcoin;
 		[SerializeField] private TMP_Text _levelDisplay;
 
-		#region SLIDER
-		[SerializeField] private RectTransform _slider;
-		[SerializeField] private TMP_Text _levelDisplayUnlockPre;
-		[SerializeField] private TMP_Text _levelDisplayUnlockNext;
-		#endregion
-
 		[SerializeField] private Image _backGroundWin;
 
 		[SerializeField] private UIClick _uIClickNextLevel;
 		[SerializeField] private UIClick _uIClickClaim;
 		[SerializeField] private UIClick _uIClickClaimCharacter;
 		[SerializeField] private Image _newFood;
-		[SerializeField] private Image _character;
+		// [SerializeField] private Image _character;
 		[SerializeField] private Image _characterGift;
 		[SerializeField] private TMP_Text _newFoodTxt;
 		private List<AvatarSO> _avatarSOs = new List<AvatarSO>();
@@ -68,6 +80,7 @@ namespace FoodSort
 		int _characterInx;
 		int _prelUnlock;
 		int _nextLevelUnlock;
+
 
 		private bool _isUnlockCharacter;
 		private bool _isClick;
@@ -81,7 +94,6 @@ namespace FoodSort
 		private Tween _tweenBackgroundWin;
 
 		Sequence seq;
-
 
 		protected override void OnEnable()
 		{
@@ -137,7 +149,9 @@ namespace FoodSort
 				_characterGift.sprite = _characterInx + 1 >= _avatarSOs.Count ? _avatarSOs[_characterInx].avatar : _avatarSOs[_characterInx + 1].avatar;
 			}
 
-			_character.sprite = _avatarSOs[_characterInx].avatar;
+
+			LoadLevelDisplayUnlockCharacter();
+
 			_coinHeader.localScale = Vector3.zero;
 			_coinGain.localScale = Vector3.zero;
 			_victoryImg.localScale = Vector3.zero;
@@ -145,9 +159,10 @@ namespace FoodSort
 			_giftImg.localScale = Vector3.zero;
 			_buttonX3.localScale = Vector3.zero;
 			_buttonContinue.localScale = Vector3.zero;
+			_apprentice.localScale = Vector3.zero;
 			_levelDisplay.transform.localScale = Vector3.zero;
 
-			_character.gameObject.SetActive(true);
+			// _character.gameObject.SetActive(true);
 			_coinHeader.gameObject.SetActive(true);
 			_victoryImg.gameObject.SetActive(true);
 			_sliderImg.gameObject.SetActive(true);
@@ -162,22 +177,21 @@ namespace FoodSort
 			_VFXconfetti?.Stop();
 			_VFXconfetti?.Play();
 			await Task.Delay(500);
-			if (_isUnlockCharacter)
+			// if (_isUnlockCharacter)
+			// {
+			// 	UnlockCharacter();
+			// }
+			// else
+			// {
+			if (!LevelManager.Instance.MaxFood)
 			{
-				UnlockCharacter();
+				await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+				await LoadUnlockNewFoodSlider();
+				await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
 			}
-			else
-			{
-				if (!LevelManager.Instance.MaxFood)
-				{
-					await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
-					await LoadUnlockNewFoodSlider();
-					await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
-				}
-				_VFXcoin?.Stop();
-				_VFXcoin?.Play();
-				CheckButtonDisplay();
-			}
+
+			CheckButtonDisplay();
+			// }
 		}
 		public void CheckAds()
 		{
@@ -236,8 +250,12 @@ namespace FoodSort
 			await ImageScale(_valueGift, 0.3f, true);
 			await ImageScale(_buttonGift, 0.2f, true);
 			_coveringSheet.gameObject.SetActive(false);
-			// CheckAdsx0();
-			await SequenceContinue();
+			await ImageScale(_apprentice, TIME_ANIM_SCALE_SLIDER_LEVEL);
+
+			if (!_isUnlockCharacter)
+				await SequenceContinue();
+			else
+				UnlockCharacter();
 		}
 		public async void NextLevel(int xCoin = 1)
 		{
@@ -266,6 +284,27 @@ namespace FoodSort
 			sizeX.x = preValue;
 			_slider.sizeDelta = sizeX;
 		}
+		public void LoadLevelDisplayUnlockCharacter()
+		{
+			if (_characterInx + 1 < _avatarSOs.Count)
+			{
+				// _apprentice.gameObject.SetActive(true);
+				_levelDisplayApprentice.text = $"{_level}/{_avatarSOs[_characterInx + 1].levelEnd}";
+
+				_character.sprite = _avatarSOs[_characterInx].avatar;
+				_nextCharacter.sprite = _avatarSOs[_characterInx + 1].hiddenAvatar;
+				_levelDisplayApprentice.text = $"{_level}/{_avatarSOs[_characterInx].levelEnd}";
+
+				int levelMinus = _characterInx - 1 >= 0 ? _avatarSOs[_characterInx - 1].levelEnd : 0;
+				float preValue = 547 * (_level - levelMinus) / (_avatarSOs[_characterInx].levelEnd - levelMinus);
+
+				Vector2 _slider = _sliderApprentice.sizeDelta;
+				_slider.x = preValue;
+				_sliderApprentice.sizeDelta = _slider;
+			}
+			// else
+			// _apprentice.gameObject.SetActive(false);
+		}
 		public async void CheckButtonDisplay()
 		{
 			if (_level == _nextLevelUnlock)
@@ -289,6 +328,7 @@ namespace FoodSort
 			}
 			else
 			{
+				await ImageScale(_apprentice, TIME_ANIM_SCALE_SLIDER_LEVEL);
 				_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
 				await SequenceContinue();
 			}
@@ -317,12 +357,12 @@ namespace FoodSort
 			_coveringSheetCharacter.gameObject.SetActive(false);
 
 
-			if (!LevelManager.Instance.MaxFood)
-			{
-				await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
-				await LoadUnlockNewFoodSlider();
-				await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
-			}
+			// if (!LevelManager.Instance.MaxFood)
+			// {
+			// 	await ImageScale(_sliderImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+			// 	await LoadUnlockNewFoodSlider();
+			// 	await ImageScale(_giftImg, TIME_ANIM_SCALE_SLIDER_LEVEL);
+			// }
 			_VFXcoin?.Stop();
 			_VFXcoin?.Play();
 			_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
@@ -393,6 +433,7 @@ namespace FoodSort
 			await Task.Delay(1000);
 
 			await ImageScale(_giftImg, 0.15f, true);
+			_giftImg.gameObject.SetActive(false);
 			_ = ImageScale(_coinHeader, TIME_ANIM_SCALE_SLIDER_LEVEL);
 			await ImageScale(_valueGift, 0.6f);
 			await ImageScale(_buttonGift, TIME_ANIM_SCALE_BUTTONCONTINUE_LEVEL);
